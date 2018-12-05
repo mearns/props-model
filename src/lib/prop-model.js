@@ -2,7 +2,7 @@ function PropertyModel (eventEmitter) {
   this._eventEmitter = eventEmitter
   this._props = {}
 }
-module.exports = PropertyModel
+export default PropertyModel
 
 function NOOP () { }
 

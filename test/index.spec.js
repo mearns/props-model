@@ -2,14 +2,13 @@
 /* eslint no-unused-expressions:0 */
 
 // Module under test
-const PropertyModel = require('..')
+import PropertyModel from '../src'
 
 // Support modules
-const chai = require('chai')
-const { expect } = chai
-const EventEmitter = require('events')
-const sinon = require('sinon')
-const sinonChai = require('sinon-chai')
+import chai, { expect } from 'chai'
+import EventEmitter from 'events'
+import sinon from 'sinon'
+import sinonChai from 'sinon-chai'
 
 chai.use(sinonChai)
 
