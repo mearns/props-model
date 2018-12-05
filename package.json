@@ -49,7 +49,8 @@
   },
   "nyc": {
     "reporter": [
-      "text", "lcov"
+      "text",
+      "lcov"
     ],
     "include": [
       "index.js",
