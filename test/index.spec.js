@@ -2,7 +2,7 @@
 /* eslint no-unused-expressions:0 */
 
 // Module under test
-import PropertyModel from '../src'
+import PropsModel from '../src'
 
 // Support modules
 import chai, { expect } from 'chai'
@@ -12,11 +12,11 @@ import sinonChai from 'sinon-chai'
 
 chai.use(sinonChai)
 
-describe('The prop-model package', () => {
+describe('The props-model package', () => {
   it('Should initialize a newly defined prop to the given initial value', () => {
     // given
     const initialValue = 314158
-    const propModel = new PropertyModel(new EventEmitter())
+    const propModel = new PropsModel(new EventEmitter())
     propModel.defineProp('foo1', initialValue)
 
     // expect
@@ -27,7 +27,7 @@ describe('The prop-model package', () => {
     // given
     const initialValue = 314158
     const newValue = 2 * initialValue + 1717
-    const propModel = new PropertyModel(new EventEmitter())
+    const propModel = new PropsModel(new EventEmitter())
     propModel.defineProp('foo1', initialValue)
 
     // when
@@ -41,7 +41,7 @@ describe('The prop-model package', () => {
     // given
     const initialValue = 314158
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const changeListener = sinon.spy()
     emitter.on('foo1-changed', changeListener)
 
@@ -57,7 +57,7 @@ describe('The prop-model package', () => {
     const initialValue = 314158
     const newValue = 2 * initialValue + 1717
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const changeListener = sinon.spy()
     propModel.defineProp('foo1', initialValue)
 
@@ -75,7 +75,7 @@ describe('The prop-model package', () => {
     const secondValue = 2 * initialValue + 1717
     const thirdValue = secondValue % 177
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const changeListener = sinon.spy()
     propModel.defineProp('foo1', initialValue)
     propModel.set('foo1', secondValue)
@@ -93,7 +93,7 @@ describe('The prop-model package', () => {
     const initialValue = 314158
     const secondValue = 2 * initialValue + 1717
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     propModel.defineProp('foo1', initialValue, () => { throw new Error('Test Error') })
     const changeListener = sinon.spy()
     emitter.on('foo1-changed', changeListener)
@@ -107,7 +107,7 @@ describe('The prop-model package', () => {
   it('should not throw an error if the initial value does not pass the valueValidator', () => {
     const initialValue = 314158
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
 
     // expect
     expect(() => propModel.defineProp('foo1', initialValue, () => { throw new Error('Test Error') })).to.not.throw
@@ -120,7 +120,7 @@ describe('The prop-model package', () => {
     const changeListener = sinon.spy()
     emitter.on('foo1-changed', changeListener)
 
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     propModel.defineProp('foo1', initialValue, () => { }, () => false)
 
     // expect
@@ -135,7 +135,7 @@ describe('The prop-model package', () => {
     const changeListener = sinon.spy()
     emitter.on('foo1-changed', changeListener)
 
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     propModel.defineProp('foo1', initialValue, () => { }, (newValue, oldValue) => typeof oldValue === 'undefined')
 
     // when
@@ -151,7 +151,7 @@ describe('The prop-model package', () => {
     const defaultDerivedValue = 2 * initialValue + 1717
     const anotherValue = defaultDerivedValue + 15
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
 
     propModel.defineProp('foo1', initialValue)
 
@@ -167,7 +167,7 @@ describe('The prop-model package', () => {
     const initialValue = 314158
     const calculator = foo1 => 2 * foo1
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
 
     propModel.defineProp('foo1', initialValue)
 
@@ -185,7 +185,7 @@ describe('The prop-model package', () => {
     const calculator = foo1 => 2 * foo1
     const emitter = new EventEmitter()
     const onChangeSpy = sinon.spy()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
 
     propModel.defineProp('foo1', initialValue)
     propModel.defineDerivedProp('bar', ['foo1'], calculator)
@@ -207,7 +207,7 @@ describe('The prop-model package', () => {
     const calculator = foo1 => 2 * foo1
     const emitter = new EventEmitter()
     const onChangeSpy = sinon.spy()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
 
     propModel.defineProp('foo1', initialValue)
     propModel.defineDerivedProp('bar', ['foo1'], calculator)
@@ -226,7 +226,7 @@ describe('The prop-model package', () => {
     // given
     const calculator = (foo1, foo2, foo3) => (31 * foo1) + (37 * foo2) + (41 * foo3)
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
 
     propModel.defineProp('foo1', 1)
     propModel.defineProp('foo2', 2)
@@ -247,7 +247,7 @@ describe('The prop-model package', () => {
   it('should create a property utilizer function that gets the current values of the property', () => {
     // given
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const handler = (foo1, foo2, a1, a2, a3) => [foo1, foo2, a1, a2, a3]
 
     propModel.defineProp('foo1', 1)
@@ -268,7 +268,7 @@ describe('The prop-model package', () => {
   it('should create an on-change handler that is triggered by any change to the dependencies', () => {
     // given
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const handler = sinon.spy()
 
     propModel.defineProp('foo1', 1)
@@ -288,7 +288,7 @@ describe('The prop-model package', () => {
   it('should allow read/write access to all primary properties through the private standard API', () => {
     // given
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const api = propModel.getStandardPrivateApi()
     propModel.defineProp('foo1', 1)
     propModel.defineProp('_foo2', 2)
@@ -305,7 +305,7 @@ describe('The prop-model package', () => {
   it('should allow read access to derived properties through the private standard API', () => {
     // given
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const api = propModel.getStandardPrivateApi()
     propModel.defineProp('foo1', 1)
     propModel.defineDerivedProp('_bar1', ['foo1'], foo1 => 2 * foo1)
@@ -323,7 +323,7 @@ describe('The prop-model package', () => {
   it('should not allow write access to derived properties through the private standard API', () => {
     // given
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const api = propModel.getStandardPrivateApi()
     propModel.defineProp('foo1', 1)
     propModel.defineDerivedProp('_bar1', ['foo1'], foo1 => 2 * foo1)
@@ -339,7 +339,7 @@ describe('The prop-model package', () => {
   it('should not allow write access to derived properties through the public standard API', () => {
     // given
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const api = propModel.getStandardPublicApi()
     propModel.defineProp('foo1', 1)
     propModel.defineDerivedProp('_bar1', ['foo1'], foo1 => 2 * foo1)
@@ -355,7 +355,7 @@ describe('The prop-model package', () => {
   it('should not allow read or write access to protected properties through the public standard API', () => {
     // given
     const emitter = new EventEmitter()
-    const propModel = new PropertyModel(emitter)
+    const propModel = new PropsModel(emitter)
     const api = propModel.getStandardPublicApi()
     propModel.defineProp('_bar1', 2)
 
@@ -373,7 +373,7 @@ describe('The prop-model package', () => {
     it(`should install appropriate accessors on target object when accessed via the ${source}`, () => {
       // given
       const emitter = new EventEmitter()
-      const propModel = new PropertyModel(emitter)
+      const propModel = new PropsModel(emitter)
       propModel.defineProp('foo', 2)
       propModel.defineProp('bar', 3)
       propModel.defineProp('baz', 5)
@@ -412,7 +412,7 @@ describe('The prop-model package', () => {
 
   it('should not allow a property to be derived from a property that is not already defined', () => {
     // given
-    const propModel = new PropertyModel(new EventEmitter())
+    const propModel = new PropsModel(new EventEmitter())
     propModel.defineProp('foo', 10)
 
     // expect
@@ -422,7 +422,7 @@ describe('The prop-model package', () => {
 
   it('should not allow a property to be derived from itself', () => {
     // given
-    const propModel = new PropertyModel(new EventEmitter())
+    const propModel = new PropsModel(new EventEmitter())
     propModel.defineProp('foo', 10)
 
     // expect
@@ -432,7 +432,7 @@ describe('The prop-model package', () => {
 
   it('should generate expected JSON', () => {
     // given
-    const propModel = new PropertyModel(new EventEmitter())
+    const propModel = new PropsModel(new EventEmitter())
     propModel.defineProp('foo', 10)
     propModel.defineProp('_bar', 'bar-value')
     propModel.defineDerivedProp('baz', ['foo', '_bar'], (foo, bar) => ({ twiceFoo: foo * 2, bar }))
@@ -454,7 +454,7 @@ describe('The prop-model package', () => {
 
   it('should generate expected JSON through the standard private API', () => {
     // given
-    const propModel = new PropertyModel(new EventEmitter())
+    const propModel = new PropsModel(new EventEmitter())
     propModel.defineProp('foo', 10)
     propModel.defineProp('_bar', 'bar-value')
     propModel.defineDerivedProp('baz', ['foo', '_bar'], (foo, bar) => ({ twiceFoo: foo * 2, bar }))
@@ -476,7 +476,7 @@ describe('The prop-model package', () => {
 
   it('should generate expected JSON through the standard public API', () => {
     // given
-    const propModel = new PropertyModel(new EventEmitter())
+    const propModel = new PropsModel(new EventEmitter())
     propModel.defineProp('foo', 10)
     propModel.defineProp('_bar', 'bar-value')
     propModel.defineDerivedProp('baz', ['foo', '_bar'], (foo, bar) => ({ twiceFoo: foo * 2, bar }))

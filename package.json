@@ -1,6 +1,6 @@
 {
-  "name": "prop-model",
-  "version": "0.2.0",
+  "name": "props-model",
+  "version": "0.1.0",
   "description": "A model for properties including change events and derived properties",
   "main": "dist/index.js",
   "keywords": [
@@ -13,18 +13,18 @@
   ],
   "files": [
     "dist/index.js",
-    "dist/lib/prop-model.js"
+    "dist/lib/props-model.js"
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:mearns/prop-model.git"
+    "url": "git@github.com:mearns/props-model.git"
   },
   "author": "Brian Mearns <mearns.b@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mearns/prop-model/issues"
+    "url": "https://github.com/mearns/props-model/issues"
   },
-  "homepage": "https://github.com/mearns/prop-model/",
+  "homepage": "https://github.com/mearns/props-model/",
   "engines": {
     "node": ">=6 <=11"
   },

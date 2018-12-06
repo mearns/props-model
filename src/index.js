@@ -1,2 +1,2 @@
-import PropModel from './lib/prop-model'
-export default PropModel
+import PropsModel from './lib/props-model'
+export default PropsModel

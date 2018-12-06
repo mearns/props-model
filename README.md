@@ -1,4 +1,4 @@
-# prop-model
+# props-model
 
 A javascript package providing a model for properties, including change events and derived properties.
 
@@ -15,7 +15,7 @@ it depends on changes.
 With npm:
 
 ```console
-npm install --save prop-model
+npm install --save props-model
 ```
 
 ## Demo Usage

@@ -1,8 +1,8 @@
-function PropertyModel (eventEmitter) {
+function PropsModel (eventEmitter) {
   this._eventEmitter = eventEmitter
   this._props = {}
 }
-export default PropertyModel
+export default PropsModel
 
 function NOOP () { }
 
@@ -10,7 +10,7 @@ function defaultDidChange (newValue, oldVaue) {
   return newValue !== oldVaue
 }
 
-PropertyModel.prototype._firePropChangeEvent = function (propName, newValue, oldValue) {
+PropsModel.prototype._firePropChangeEvent = function (propName, newValue, oldValue) {
   this._eventEmitter.emit(`${propName}-changed`, propName, newValue, oldValue)
 }
 
@@ -29,7 +29,7 @@ PropertyModel.prototype._firePropChangeEvent = function (propName, newValue, old
  * whether or not the old value and new value should be considered a change. A change even for the property is fired if and only
  * if the function returns a truthy value. The default uses `newValue !== oldValue`.
  */
-PropertyModel.prototype.defineProp = function (propName, initialValue, valueValidator = NOOP, didChange = defaultDidChange) {
+PropsModel.prototype.defineProp = function (propName, initialValue, valueValidator = NOOP, didChange = defaultDidChange) {
   if (this._props[propName]) {
     throw new Error(`Property already defined: ${propName}`)
   }
@@ -45,7 +45,7 @@ PropertyModel.prototype.defineProp = function (propName, initialValue, valueVali
   return this
 }
 
-PropertyModel.prototype.defineDerivedProp = function (propName, dependsOn = [], _calculateValue, defaultValue, didChange = defaultDidChange) {
+PropsModel.prototype.defineDerivedProp = function (propName, dependsOn = [], _calculateValue, defaultValue, didChange = defaultDidChange) {
   if (this._props[propName]) {
     throw new Error(`Property already defined: ${propName}`)
   }
@@ -72,7 +72,7 @@ PropertyModel.prototype.defineDerivedProp = function (propName, dependsOn = [], 
  * value as two arguments, or provide an object whose property names and property values
  * describe what properties you want to set, and how.
  */
-PropertyModel.prototype._set = function (propValidator, ...args) {
+PropsModel.prototype._set = function (propValidator, ...args) {
   if (args.length === 1) {
     const propChanges = []
     Object.keys(args[0]).forEach(propName => {
@@ -107,7 +107,7 @@ PropertyModel.prototype._set = function (propValidator, ...args) {
   }
 }
 
-PropertyModel.prototype._get = function (propValidator, propName) {
+PropsModel.prototype._get = function (propValidator, propName) {
   propValidator(propName)
   if (!this._props[propName]) {
     throw new Error(`No such property '${propName}'`)
@@ -115,7 +115,7 @@ PropertyModel.prototype._get = function (propValidator, propName) {
   return this._props[propName].value
 }
 
-PropertyModel.prototype._toJSON = function (propChecker) {
+PropsModel.prototype._toJSON = function (propChecker) {
   return Object.entries(this._props)
     .filter(([ propName ]) => propChecker(propName))
     .reduce((o, [propName, { value }]) => {
@@ -131,7 +131,7 @@ function createAccessorNames (propName, ...prefixes) {
 /**
  * Adds accessor methods (getters and setters) fo the specified properties as methods on the given target object.
  */
-PropertyModel.prototype._installAccessors = function (readValidator, writeValidator, target, propertyAccess) {
+PropsModel.prototype._installAccessors = function (readValidator, writeValidator, target, propertyAccess) {
   for (let propName of Object.keys(propertyAccess)) {
     const access = propertyAccess[propName]
     if (!this._props[propName]) {
@@ -197,7 +197,7 @@ PropertyModel.prototype._installAccessors = function (readValidator, writeValida
  * @param {function} handler The function that the returned function will delegate to with the values of the specified
  * properties.
  */
-PropertyModel.prototype._createUtilizer = function (propValidator, [...propNames], handler) {
+PropsModel.prototype._createUtilizer = function (propValidator, [...propNames], handler) {
   propNames.forEach(propValidator)
   propNames.forEach(propName => {
     if (!this._props[propName]) {
@@ -217,7 +217,7 @@ PropertyModel.prototype._createUtilizer = function (propValidator, [...propNames
  *
  * The given handler is invoked with three arguments: propName, newValue, oldValue.
  */
-PropertyModel.prototype._onAny = function (propValidator, [...propNames], handler) {
+PropsModel.prototype._onAny = function (propValidator, [...propNames], handler) {
   propNames.forEach(propValidator)
   for (let i = 0; i < propNames.length; i++) {
     this._eventEmitter.on(`${propNames[i]}-changed`, handler)
@@ -232,17 +232,17 @@ PropertyModel.prototype._onAny = function (propValidator, [...propNames], handle
  * values of the properties and delegate them to the given `handler`. The function thus prouced is
  * registered as a change handler for the given properties, and is also returned from this function.
  */
-PropertyModel.prototype._createChangeHandler = function (propValidator, [...respondsTo], handler) {
+PropsModel.prototype._createChangeHandler = function (propValidator, [...respondsTo], handler) {
   const callback = this._createUtilizer(propValidator, respondsTo, handler)
   this._onAny(() => {}, respondsTo, () => callback())
   return callback
 }
 
-PropertyModel.prototype.createUtilizer = function (propNames, handler) {
+PropsModel.prototype.createUtilizer = function (propNames, handler) {
   return this._createUtilizer(() => {}, propNames, handler)
 }
 
-PropertyModel.prototype.onAny = function (propNames, handler) {
+PropsModel.prototype.onAny = function (propNames, handler) {
   return this._onAny(() => {}, propNames, handler)
 }
 
@@ -253,23 +253,23 @@ PropertyModel.prototype.onAny = function (propNames, handler) {
  * @param {Array<String>} respondsTo The array of property names to respond to
  * @param {function} handler The handler to all when ay of the specified properties change
  */
-PropertyModel.prototype.createChangeHandler = function (respondsTo, handler) {
+PropsModel.prototype.createChangeHandler = function (respondsTo, handler) {
   return this._createChangeHandler(() => {}, respondsTo, handler)
 }
 
-PropertyModel.prototype.set = function (...args) {
+PropsModel.prototype.set = function (...args) {
   return this._set(() => {}, ...args)
 }
 
-PropertyModel.prototype.get = function (...args) {
+PropsModel.prototype.get = function (...args) {
   return this._get(() => {}, ...args)
 }
 
-PropertyModel.prototype.toJSON = function () {
+PropsModel.prototype.toJSON = function () {
   return this._toJSON(() => true)
 }
 
-PropertyModel.prototype.installAccessors = function (...args) {
+PropsModel.prototype.installAccessors = function (...args) {
   return this._installAccessors(() => {}, () => {}, ...args)
 }
 
@@ -297,7 +297,7 @@ function propertyCheckerToValidator (checker) {
  *
  * @returns {{get, set, createUtilizer, createChangeHandler, toJSON}}
  */
-PropertyModel.prototype.createApi = function (readChecker, readValidator = propertyCheckerToValidator(readChecker), writeValidator = readValidator) {
+PropsModel.prototype.createApi = function (readChecker, readValidator = propertyCheckerToValidator(readChecker), writeValidator = readValidator) {
   return {
     get: (...args) => this._get(readValidator, ...args),
     set: (...args) => this._set(writeValidator, ...args),
@@ -334,7 +334,7 @@ function createStandardWriteValidator (propModel) {
  *
  * @see #createApi
  */
-PropertyModel.prototype.getStandardPublicApi = function () {
+PropsModel.prototype.getStandardPublicApi = function () {
   const standardWriteValidator = createStandardWriteValidator(this)
   return this.createApi(propNameIsPublic, assertPropNameIsPublic, propName => {
     assertPropNameIsPublic(propName)
@@ -349,6 +349,6 @@ PropertyModel.prototype.getStandardPublicApi = function () {
  * This is typically the API used by the property owner itself, to ensure you aren't
  * trying to write to derived properties, which is usually not recommended.
  */
-PropertyModel.prototype.getStandardPrivateApi = function () {
+PropsModel.prototype.getStandardPrivateApi = function () {
   return this.createApi(() => true, () => {}, createStandardWriteValidator(this))
 }
