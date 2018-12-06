@@ -13,7 +13,6 @@ import sinonChai from 'sinon-chai'
 chai.use(sinonChai)
 
 describe('The props-model package', () => {
-
   describe('import options', () => {
     const requiredModule = require('../src')
     ;[
