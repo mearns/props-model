@@ -1,8 +1,7 @@
-function PropsModel (eventEmitter) {
+export function PropsModel (eventEmitter) {
   this._eventEmitter = eventEmitter
   this._props = {}
 }
-export default PropsModel
 
 function NOOP () { }
 

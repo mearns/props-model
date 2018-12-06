@@ -2,7 +2,7 @@
 /* eslint no-unused-expressions:0 */
 
 // Module under test
-import PropsModel from '../src'
+import PropsModel, { PropsModel as NamedImport } from '../src'
 
 // Support modules
 import chai, { expect } from 'chai'
@@ -13,6 +13,23 @@ import sinonChai from 'sinon-chai'
 chai.use(sinonChai)
 
 describe('The props-model package', () => {
+
+  describe('import options', () => {
+    const requiredModule = require('../src')
+    ;[
+      ['required(\'props-model\').default', requiredModule.default],
+      ['required(\'props-model\').PropsModel', requiredModule.PropsModel],
+      ['named import', NamedImport]
+    ].forEach(([description, Uut]) => {
+      it(`should work as expected when imported as ${description}`, () => {
+        expect(Uut).to.be.a('function')
+        expect(Uut).to.haveOwnProperty('name').which.equals('PropsModel')
+        const instance = new Uut()
+        expect(instance).to.be.instanceOf(PropsModel)
+      })
+    })
+  })
+
   it('Should initialize a newly defined prop to the given initial value', () => {
     // given
     const initialValue = 314158

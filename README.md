@@ -21,13 +21,13 @@ npm install --save props-model
 ## Demo Usage
 
 ```javascript
-const PropModel = require('.')
-const EventEmitter = require('events')
+import PropsModel from 'props-model' // or `const { PropsModel } = require('props-model')`
+import EventEmitter from 'events'
 
 class MutableRectangle {
   constructor (initialLength, initialWidth) {
     // Define the properties of this object.
-    const propModel = new PropModel(new EventEmitter())
+    const propModel = new PropsModel(new EventEmitter())
       // These are "primary" properties, they are not calculated from other properties.
       .defineProp('length', initialLength, isValidDimension)
       .defineProp('width', initialWidth, isValidDimension)
