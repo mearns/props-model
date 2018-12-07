@@ -43,7 +43,7 @@
     "test-only": "mocha --require '@babel/polyfill' --require '@babel/register' --recursive ./test",
     "test": "nyc npm run test-only",
     "verify": "npm-run-all check test",
-    "compile": "if-env NODE_ENV=production && babel --presets minify --no-comments src -d dist || babel src -d dist",
+    "compile": "babel src -d dist",
     "docs": "jsdoc --recurse --readme README.md --destination out/jsdocs --configure jsdoc.conf.json --package package.json src/",
     "build": "npm-run-all clean verify compile",
     "prepublishOnly": "cross-env NODE_ENV=production npm run build"
