@@ -44,7 +44,6 @@
     "test": "nyc npm run test-only",
     "verify": "npm-run-all check test",
     "compile": "if-env NODE_ENV=production && babel --presets minify --no-comments src -d dist || babel src -d dist",
-    "docs": "jsdoc --recurse --destination out/jsdocs --package package.json --configure jsdoc.conf.json \"src/**/*\"",
     "build": "npm-run-all clean verify compile",
     "prepublishOnly": "cross-env NODE_ENV=production npm run build"
   },
@@ -70,8 +69,6 @@
     "chai": "4.2.0",
     "cross-env": "5.2.0",
     "if-env": "1.0.4",
-    "jsdoc": "3.5.5",
-    "jsdoc-to-markdown": "4.0.1",
     "mkdirp": "0.5.1",
     "mocha": "5.2.0",
     "npm-package-json-lint": "3.4.1",
