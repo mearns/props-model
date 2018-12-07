@@ -1,5 +1,19 @@
 # props-model
 
+[![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
+
+![npm](https://img.shields.io/npm/v/props-model.svg)
+[![Stable Build](https://travis-ci.org/mearns/props-model.svg?branch=versions%2Fstable)](https://travis-ci.org/mearns/props-model)
+![node](https://img.shields.io/node/v/props-model.svg)
+![NpmLicense](https://img.shields.io/npm/l/props-model.svg)
+
+[![npm bundle size (minified)](https://img.shields.io/bundlephobia/min/props-model.svg)](https://www.npmjs.com/package/props-model)
+![Libraries.io for GitHub](https://img.shields.io/librariesio/github/mearns/props-model.svg)
+![npm](https://img.shields.io/npm/dy/props-model.svg)
+![GitHub issues](https://img.shields.io/github/issues-raw/mearns/props-model.svg)
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/mearns/props-model.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/mearns/props-model.svg)
+
 A javascript package providing a model for properties, including change events and derived properties.
 
 ## Overview
