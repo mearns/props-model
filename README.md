@@ -1,5 +1,7 @@
 # props-model
 
+A javascript package providing a model for properties, including change events and derived properties.
+
 [![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
 
 [![npm](https://img.shields.io/npm/v/props-model.svg)](https://libraries.io/github/mearns/props-model)
@@ -14,7 +16,6 @@
 [![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/mearns/props-model.svg)](https://github.com/mearns/props-model/pulls?q=is%3Apr+is%3Aopen)
 [![GitHub last commit](https://img.shields.io/github/last-commit/mearns/props-model.svg)](https://github.com/mearns/props-model/commits/)
 
-A javascript package providing a model for properties, including change events and derived properties.
 
 ## Overview
 
