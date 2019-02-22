@@ -107,6 +107,56 @@ export class PropsModel {
   }
 
   /**
+   * Create a special derived property that produces a backed view of another property, called the base property.
+   * Like any derived property, changing the base property will cause a new value fo the view property to be calculated
+   * and set. Unlike a normal derived property, you can also set the value of the view property and it will be reflected
+   * in the base property.
+   *
+   * In otherwords, you're creating a circular dependency between the view prop and the base prop. We ensure this doesn't
+   * lead (directly) to an infinite loop by supressing the update of the view prop in response to consequent
+   * updating of the base prop. However, that means that view and base prop might get out of sync; you need to make sure
+   * your reduceBaseValue function produces a value for the base property that would yield the same view value.
+   *
+   * @param {string} viewName The name of the view-prop to define
+   * @param {string} viewOf The name of a property that this is a view of
+   * @param {function(B):V} calculateViewValue A function that calculates the value of the view prop from the value
+   *   of the `viewOf` property.
+   * @param {function(V, B):B} reduceBaseValue A function which is called whenever the view property is get the updated
+   *   value of the base property. It's invoked with the new value of the view prop and the current value of the base prop.
+   * @param {function(V, V):boolean} didChange An optional function used to determine if the view prop should be considered
+   *   to be changed.
+   */
+  definePropView (viewName, viewOf, calculateViewValue, reduceBaseValue, didChange = defaultDidChange) {
+    if (this._props[viewName]) {
+      throw new Error(`Property already defined: ${viewName}`)
+    }
+    const calculateValue = this.createUtilizer([viewOf], calculateViewValue)
+    const value = calculateValue()
+    this._props[viewName] = {
+      value,
+      derived: true,
+      valueValidator: () => {},
+      didChange
+    }
+    let triggered = false
+    this._onAny(() => {}, [viewOf], () => {
+      if (!triggered) {
+        this.set(viewName, calculateValue())
+      }
+    })
+    this._onAny(() => {}, [viewName], (ignore, newViewValue, oldViewValue) => {
+      const newViewOfValue = reduceBaseValue(newViewValue, this.get(viewOf))
+      triggered = true
+      this.set(viewOf, newViewOfValue)
+      triggered = false
+    })
+    if (didChange(value, undefined)) {
+      this._firePropChangeEvent(viewName, value, undefined)
+    }
+    return this
+  }
+
+  /**
    * Set one or more properties. You won't typically call this directly, you would use it through
    * the [set()]{@link PropsModelApi#set} method.
    *
@@ -155,6 +205,18 @@ export class PropsModel {
     }
   }
 
+  /**
+   * Get the value of the named property. You won't typically call this directly, you would use it through
+   * the [set()]{@link PropsModelApi#get} method.
+   *
+   * @private
+   * @param {propValidator} propValidator Called to verify read access to the named property.
+   * @param {string} propName The name of the property to get the value of.
+   *
+   * @returns {*} The value of the requested property
+   * @throws {Error} If the named property does not exist.
+   * @throws {*} Anything thrown by the `propValidator` when invoked with the given `propName`.
+   */
   _get (propValidator, propName) {
     propValidator(propName)
     if (!this._props[propName]) {
@@ -163,16 +225,37 @@ export class PropsModel {
     return this._props[propName].value
   }
 
+  /**
+   * Return an JSON-serializable object that represents properties tracked by this model and their
+   * values. You won't typically call this directly, you would use it through
+   * the [set()]{@link PropsModelApi#toJSON} method.
+   *
+   * The name of each property known to this model is checked against the given `propChecker`; if
+   * it returns a truthy value, the property will be included in the returned "JSON" object, otherwise
+   * it wil not be.
+   *
+   * Note that property values are passed through `JSON.stringify` and then `JSON.parse` before being
+   * attached to the returned object. This may or may not lead to a different instance than what
+   * is kept in the model, depending on how the object handles JSONification, which could leak a
+   * reference to a mutable shared object, possibly allowing write unintended modifications without
+   * access restriction or event firing.
+   *
+   * @private
+   * @param {propChecker} propChecker Called to determine which properties should be included
+   * in the returned object.
+   * @returns {*} An object representing a JSONable account of the permitted properties and their values.
+   */
   _toJSON (propChecker) {
     return Object.entries(this._props)
       .filter(([ propName ]) => propChecker(propName))
       .reduce((o, [propName, { value }]) => {
-        o[propName] = value
+        o[propName] = JSON.parse(JSON.stringify(value))
         return o
       }, {})
   }
 
   /**
+   * XXX Left off documenting here.
    * Adds accessor methods (getters and setters) fo the specified properties as methods on the given target object.
    */
   _installAccessors (readValidator, writeValidator, target, propertyAccess) {
@@ -454,6 +537,18 @@ function createStandardWriteValidator (propModel) {
  * @callback propValidator
  * @param {string} propName The name of the property
  * @throws {*} Throw an error if the property name is not valid for the appropriate task.
+ */
+
+/**
+ * A generic checker function that is typically used to determine access authorization
+ * for properties. Contrasted with a {@link propValidator}, this is not intended to make
+ * any assertions, i.e., it is not meant to throw access to the property is not allowed,
+ * but simply to return a falsey value in that case.
+ *
+ * @callback propChecker
+ * @param {string} propName the name of the property
+ * @returns {boolean} A truthy value if and only if the access should be granted to the named
+ * property, a falsey value otherwise.
  */
 
 /**

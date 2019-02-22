@@ -510,4 +510,42 @@ describe('The props-model package', () => {
       }
     })
   })
+
+  describe('Prop views', () => {
+    it('should give the calculated value for the view', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('foo', [10, 20])
+      propModel.definePropView('foo-x', 'foo', ([x, y]) => x, (newX, [x, y]) => [newX, y])
+
+      // expect
+      expect(propModel.get('foo-x')).to.equal(10)
+    })
+
+    it('should update the view value when the base property changes', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('foo', [10, 20])
+      propModel.definePropView('foo-x', 'foo', ([x, y]) => x, (newX, [x, y]) => [newX, y])
+
+      // when
+      propModel.set('foo', [30, 40])
+
+      // then
+      expect(propModel.get('foo-x')).to.equal(30)
+    })
+
+    it('should update the base property when the view is written', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('foo', [10, 20])
+      propModel.definePropView('foo-x', 'foo', ([x, y]) => x, (newX, [x, y]) => [newX, y])
+
+      // when
+      propModel.set('foo-x', 57)
+
+      // then
+      expect(propModel.get('foo')).to.deep.equal([57, 20])
+    })
+  })
 })
