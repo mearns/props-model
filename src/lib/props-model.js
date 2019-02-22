@@ -156,6 +156,15 @@ export class PropsModel {
     return this
   }
 
+  defineViewOfArrayProp (viewName, viewOf, arrayIndex, didChange) {
+    return this.definePropView(viewName, viewOf, base => base[arrayIndex], (viewValue, baseValue) => [...baseValue.slice(0, arrayIndex), viewValue, ...baseValue.slice(arrayIndex + 1)], didChange)
+  }
+
+  defineViewOfObjectProp (viewName, viewOf, propertyName, didChange) {
+    return this.definePropView(viewName, viewOf, baseValue => baseValue[propertyName],
+      (viewValue, baseValue) => ({ ...baseValue, [propertyName]: viewValue }))
+  }
+
   /**
    * Set one or more properties. You won't typically call this directly, you would use it through
    * the [set()]{@link PropsModelApi#set} method.

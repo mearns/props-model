@@ -511,7 +511,7 @@ describe('The props-model package', () => {
     })
   })
 
-  describe('Prop views', () => {
+  describe('prop views', () => {
     it('should give the calculated value for the view', () => {
       // given
       const propModel = new PropsModel(new EventEmitter())
@@ -546,6 +546,68 @@ describe('The props-model package', () => {
 
       // then
       expect(propModel.get('foo')).to.deep.equal([57, 20])
+    })
+  })
+
+  describe('array prop views', () => {
+    it('should give the specified index of the array base prop as the view value', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('foo', [10, 20])
+      propModel.defineViewOfArrayProp('foo-0', 'foo', 0)
+
+      // expect
+      expect(propModel.get('foo-0')).to.equal(10)
+
+      // when
+      propModel.set('foo', [13, 23])
+
+      // then
+      expect(propModel.get('foo-0')).to.equal(13)
+    })
+
+    it('should overwrite the specified index of the base prop array when the view is set', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('foo', [10, 20])
+      propModel.defineViewOfArrayProp('foo-1', 'foo', 1)
+
+      // when
+      propModel.set('foo-1', 144)
+
+      // then
+      expect(propModel.get('foo')).to.deep.equal([10, 144])
+    })
+  })
+
+  describe('object prop views', () => {
+    it('should give the specified property of the base prop as the view value', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('foo', { x: 10, y: 20 })
+      propModel.defineViewOfObjectProp('foo-x', 'foo', 'x')
+
+      // then
+      expect(propModel.get('foo-x')).to.equal(10)
+
+      // when
+      propModel.set('foo', { x: 19, z: 'whatever' })
+
+      // then
+      expect(propModel.get('foo-x')).to.equal(19)
+    })
+
+    it('should overwrite the specified property of the base prop object when the view is set', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('foo', { x: 10, y: 20 })
+      propModel.defineViewOfObjectProp('foo-y', 'foo', 'y')
+
+      // when
+      propModel.set('foo-y', 399)
+
+      // then
+      expect(propModel.get('foo')).to.deep.equal({ x: 10, y: 399 })
     })
   })
 })
