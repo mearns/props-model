@@ -610,4 +610,25 @@ describe('The props-model package', () => {
       expect(propModel.get('foo')).to.deep.equal({ x: 10, y: 399 })
     })
   })
+
+  it('should give the raw (unserialized) property values for getAll', () => {
+    // given
+    const propModel = new PropsModel(new EventEmitter())
+    const testError = new Error('lalala')
+    const testObject = {
+      x: 10,
+      y: 'hidden to JSON',
+      toJSON: function () {
+        return { x: this.x }
+      }
+    }
+    propModel.defineProp('e', testError)
+    propModel.defineProp('o', testObject)
+
+    // expect
+    expect(propModel.getAll()).to.deep.equal({
+      e: testError,
+      o: testObject
+    })
+  })
 })

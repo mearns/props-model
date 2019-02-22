@@ -237,7 +237,7 @@ export class PropsModel {
   /**
    * Return an JSON-serializable object that represents properties tracked by this model and their
    * values. You won't typically call this directly, you would use it through
-   * the [set()]{@link PropsModelApi#toJSON} method.
+   * the [toJSON()]{@link PropsModelApi#toJSON} method.
    *
    * The name of each property known to this model is checked against the given `propChecker`; if
    * it returns a truthy value, the property will be included in the returned "JSON" object, otherwise
@@ -259,6 +259,15 @@ export class PropsModel {
       .filter(([ propName ]) => propChecker(propName))
       .reduce((o, [propName, { value }]) => {
         o[propName] = JSON.parse(JSON.stringify(value))
+        return o
+      }, {})
+  }
+
+  _getAll (propChecker, propNames = Object.keys(this._props)) {
+    return propNames
+      .filter(propChecker)
+      .reduce((o, propName) => {
+        o[propName] = this._props[propName].value
         return o
       }, {})
   }
@@ -405,6 +414,10 @@ export class PropsModel {
     return this._toJSON(() => true)
   }
 
+  getAll (...args) {
+    return this._getAll(() => true, ...args)
+  }
+
   installAccessors (...args) {
     return this._installAccessors(() => {}, () => {}, ...args)
   }
@@ -421,7 +434,7 @@ export class PropsModel {
    * @param {function(string):*} [writeValidator=readValidator] A function to enforce write access, similar to the `readValidator`.
    * If not given, the default is to use the `readValidator`.
    *
-   * @returns {{get, set, createUtilizer, createChangeHandler, toJSON}}
+   * @returns {{get, set, createUtilizer, createChangeHandler, toJSON, getAll}}
    */
   createApi (readChecker, readValidator = propertyCheckerToValidator(readChecker), writeValidator = readValidator) {
     return {
@@ -430,7 +443,8 @@ export class PropsModel {
       createUtilizer: (...args) => this._createUtilizer(readValidator, ...args),
       createChangeHandler: (...args) => this._createChangeHandler(readValidator, ...args),
       installAccessors: (...args) => this._installAccessors(readValidator, writeValidator, ...args),
-      toJSON: () => this._toJSON(readChecker)
+      toJSON: () => this._toJSON(readChecker),
+      getAll: () => this._getAll(readChecker)
     }
   }
 
