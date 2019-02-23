@@ -267,6 +267,10 @@ export class PropsModel {
     return propNames
       .filter(propChecker)
       .reduce((o, propName) => {
+        const prop = this._props[propName]
+        if (!prop) {
+          throw new Error(`No such property '${propName}'`)
+        }
         o[propName] = this._props[propName].value
         return o
       }, {})
