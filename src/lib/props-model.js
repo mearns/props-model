@@ -276,6 +276,10 @@ export class PropsModel {
       }, {})
   }
 
+  _getPropNames (propChecker) {
+    return Object.keys(this._props).filter(propChecker)
+  }
+
   /**
    * XXX Left off documenting here.
    * Adds accessor methods (getters and setters) fo the specified properties as methods on the given target object.
@@ -422,6 +426,10 @@ export class PropsModel {
     return this._getAll(() => true, ...args)
   }
 
+  getPropNames () {
+    return this._getPropNames(() => true)
+  }
+
   installAccessors (...args) {
     return this._installAccessors(() => {}, () => {}, ...args)
   }
@@ -448,7 +456,8 @@ export class PropsModel {
       createChangeHandler: (...args) => this._createChangeHandler(readValidator, ...args),
       installAccessors: (...args) => this._installAccessors(readValidator, writeValidator, ...args),
       toJSON: () => this._toJSON(readChecker),
-      getAll: () => this._getAll(readChecker)
+      getAll: () => this._getAll(readChecker),
+      getPropNames: () => this._getPropNames(readChecker)
     }
   }
 
