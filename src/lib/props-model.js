@@ -123,6 +123,19 @@ export class PropsModel {
    *   of the `viewOf` property.
    * @param {function(V, B):B} reduceBaseValue A function which is called whenever the view property is get the updated
    *   value of the base property. It's invoked with the new value of the view prop and the current value of the base prop.
+   *   There is special handling of this function, in that it is invoked bound to an object with a ``get`` method that can be
+   *   used just like this PropModel's `get` method. This is so that your reduction function, which is how you update the
+   *   base property when the view property is set, can be informed by other property values. You'll need to be careful of this,
+   *   as the view is still only defined between a single base property and a single view property, thus the reducer will *not*
+   *   be triggered by any of the other properties that you use inside the reducer function. You should consider these other
+   *   properties, if you use them, to control the *feedback* from the view property to the base property, not to actually be
+   *   part of the view. A good example of this is a 'lockAspectRatio' property and a base property that contains a width and a
+   *   height, with view props for each of those dimensions. If the lockAspectRatio property is true, then changes to the height
+   *   view property will require that the width value stored in the base property changes as well, and vice versa. If the
+   *   lockAspectRatio property is false, then each of the dimension properties can change without affecting the other. Thus
+   *   the action of feedback from height or width to the base property is controlled by the lockAspectRatio property. However,
+   *   changing the lockAspectRatio property would not imply any necessary change to any of the dimensions, so those will not
+   *   be triggered by it.
    * @param {function(V, V):boolean} didChange An optional function used to determine if the view prop should be considered
    *   to be changed.
    */
@@ -130,6 +143,9 @@ export class PropsModel {
     if (this._props[viewName]) {
       throw new Error(`Property already defined: ${viewName}`)
     }
+    reduceBaseValue = reduceBaseValue.bind({
+      get: (...args) => this.get(...args)
+    })
     const calculateValue = this.createUtilizer([viewOf], calculateViewValue)
     const value = calculateValue()
     this._props[viewName] = {

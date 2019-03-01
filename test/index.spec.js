@@ -547,6 +547,56 @@ describe('The props-model package', () => {
       // then
       expect(propModel.get('foo')).to.deep.equal([57, 20])
     })
+
+    it('The reduce function should be invoked bound to an object that can be used to get properties', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('foo', [10, 20])
+      propModel.defineProp('lockAspect', false)
+      const xReducer = function (newX, [x, y]) {
+        const lock = this.get('lockAspect')
+        if (lock) {
+          const aspect = x / y
+          return [newX, newX / aspect]
+        }
+        return [newX, y]
+      }
+      const yReducer = function (newY, [x, y]) {
+        const lock = this.get('lockAspect')
+        if (lock) {
+          const aspect = x / y
+          return [newY * aspect, newY]
+        }
+        return [x, newY]
+      }
+      propModel.definePropView('foo-x', 'foo', ([x]) => x, xReducer)
+      propModel.definePropView('foo-y', 'foo', ([x, y]) => y, yReducer)
+      propModel.defineDerivedProp('twice-y', ['foo-y'], y => 2 * y)
+
+      // when
+      propModel.set('foo-x', 35)
+
+      // then
+      expect(propModel.get('foo')).to.deep.equal([35, 20])
+      expect(propModel.get('foo-y')).to.deep.equal(20)
+      expect(propModel.get('twice-y')).to.deep.equal(40)
+
+      // when
+      propModel.set('lockAspect', true)
+
+      // then
+      expect(propModel.get('foo')).to.deep.equal([35, 20])
+      expect(propModel.get('foo-y')).to.deep.equal(20)
+      expect(propModel.get('twice-y')).to.deep.equal(40)
+
+      // when
+      propModel.set('foo-x', 70)
+
+      // then
+      expect(propModel.get('foo')).to.deep.equal([70, 40])
+      expect(propModel.get('foo-y')).to.deep.equal(40)
+      expect(propModel.get('twice-y')).to.deep.equal(80)
+    })
   })
 
   describe('array prop views', () => {
