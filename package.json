@@ -1,6 +1,6 @@
 {
   "name": "props-model",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A model for properties including change events and derived properties",
   "main": "dist/index.js",
   "keywords": [
