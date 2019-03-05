@@ -20,6 +20,7 @@ export class PropsModel {
   constructor (eventEmitter) {
     this._eventEmitter = eventEmitter
     this._props = {}
+    this._firedProps = new Set()
   }
 
   /**
@@ -34,7 +35,21 @@ export class PropsModel {
    * @param {*} oldValue The previous value of the property.
    */
   _firePropChangeEvent (propName, newValue, oldValue) {
-    this._eventEmitter.emit(`${propName}-changed`, propName, newValue, oldValue)
+    this._firePropChangeEvents([
+      [propName, [newValue, oldValue]]
+    ])
+  }
+
+  _firePropChangeEvents (events) {
+    const firstInChain = this._firedProps.size === 0
+    events.forEach(([propName, [newValue, oldValue]]) => {
+      this._firedProps.add(propName)
+      this._eventEmitter.emit(`${propName}-changed`, propName, newValue, oldValue)
+    })
+    if (firstInChain) {
+      this._eventEmitter.emit('prop-chain-completed', Array.from(this._firedProps))
+      this._firedProps.clear()
+    }
   }
 
   /**
@@ -209,12 +224,10 @@ export class PropsModel {
         oldValues.push(this._props[propName].value)
         this._props[propName].value = value
       })
-      Object.entries(args[0]).forEach(([ propName, value ], idx) => {
-        const oldValue = oldValues[idx]
-        if (this._props[propName].didChange(value, oldValue)) {
-          this._firePropChangeEvent(propName, value, oldValue)
-        }
-      })
+      const changeEvents = Object.entries(args[0])
+        .map(([ propName, value ], idx) => [propName, [value, oldValues[idx]]])
+        .filter(([propName, [newValue, oldValue]]) => this._props[propName].didChange(newValue, oldValue))
+      this._firePropChangeEvents(changeEvents)
     } else {
       const [propName, value] = args
       if (!this._props[propName]) {
@@ -393,6 +406,10 @@ export class PropsModel {
     }
   }
 
+  _onPropChainComplete (propFilter, handler) {
+    this._eventEmitter.on('prop-chain-completed', (firedProps) => handler(firedProps.filter(propFilter)))
+  }
+
   /**
    * Register the given handler to be called with the values of all of the named properties anytime
    * any one of those properties changes.
@@ -424,6 +441,10 @@ export class PropsModel {
    */
   createChangeHandler (respondsTo, handler) {
     return this._createChangeHandler(() => {}, respondsTo, handler)
+  }
+
+  onPropChainComplete (handler) {
+    return this._onPropChainComplete(() => true, handler)
   }
 
   set (...args) {
@@ -462,7 +483,7 @@ export class PropsModel {
    * @param {function(string):*} [writeValidator=readValidator] A function to enforce write access, similar to the `readValidator`.
    * If not given, the default is to use the `readValidator`.
    *
-   * @returns {{get, set, createUtilizer, createChangeHandler, toJSON, getAll}}
+   * @returns {{get, set, createUtilizer, createChangeHandler, toJSON, getAll, getPropNames, }}
    */
   createApi (readChecker, readValidator = propertyCheckerToValidator(readChecker), writeValidator = readValidator) {
     return {
@@ -473,7 +494,8 @@ export class PropsModel {
       installAccessors: (...args) => this._installAccessors(readValidator, writeValidator, ...args),
       toJSON: () => this._toJSON(readChecker),
       getAll: () => this._getAll(readChecker),
-      getPropNames: () => this._getPropNames(readChecker)
+      getPropNames: () => this._getPropNames(readChecker),
+      onPropChainComplete: (...args) => this._onPropChainComplete(readChecker, ...args)
     }
   }
 

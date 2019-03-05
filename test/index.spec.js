@@ -681,4 +681,58 @@ describe('The props-model package', () => {
       o: testObject
     })
   })
+
+  describe('onPropChainComplete', () => {
+    it('should fire after all derived props are modified', () => {
+      // given
+      const propModel = new PropsModel(new EventEmitter())
+      propModel.defineProp('a', 10)
+      propModel.defineProp('b', 23)
+      propModel.defineProp('c', 'foo')
+      propModel.defineProp('d', true)
+      propModel.defineProp('e', [2, 3, 5])
+      propModel.defineDerivedProp('x', ['a', 'c'], (a, c) => `${a}-${c}`)
+      propModel.defineDerivedProp('y', ['x', 'a', 'd'], (x, a, d) => d ? x : a)
+      propModel.defineViewOfArrayProp('e-2', 'e', 2)
+      const spy = sinon.spy()
+      propModel.onPropChainComplete(spy)
+
+      // expect
+      propModel.set('a', 11)
+      expect(spy).to.have.been.calledOnce
+      expect(new Set(spy.firstCall.args[0])).to.deep.equal(new Set(['a', 'x', 'y']))
+      expect(propModel.get('a')).to.equal(11)
+      expect(propModel.get('x')).to.equal('11-foo')
+      expect(propModel.get('y')).to.equal('11-foo')
+
+      // expect
+      spy.resetHistory()
+      propModel.set('b', 24)
+      expect(spy).to.have.been.calledOnce
+      expect(new Set(spy.firstCall.args[0])).to.deep.equal(new Set(['b']))
+      expect(propModel.get('b')).to.equal(24)
+
+      // expect
+      spy.resetHistory()
+      propModel.set({ c: 'bar', d: false })
+      expect(spy).to.have.been.calledOnce
+      expect(new Set(spy.firstCall.args[0])).to.deep.equal(new Set(['c', 'd', 'x', 'y']))
+      expect(propModel.get('c')).to.equal('bar')
+      expect(propModel.get('d')).to.equal(false)
+      expect(propModel.get('x')).to.equal('11-bar')
+      expect(propModel.get('y')).to.equal(11)
+
+      // expect
+      spy.resetHistory()
+      propModel.set('e', ['g', 'h', 'i'])
+      expect(spy).to.have.been.calledOnce
+      expect(new Set(spy.firstCall.args[0])).to.deep.equal(new Set(['e', 'e-2']))
+
+      // expect
+      spy.resetHistory()
+      propModel.set('e-2', '%-%')
+      expect(spy).to.have.been.calledOnce
+      expect(new Set(spy.firstCall.args[0])).to.deep.equal(new Set(['e', 'e-2']))
+    })
+  })
 })
