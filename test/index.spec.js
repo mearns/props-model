@@ -385,7 +385,7 @@ describe('The props-model package', () => {
     ['PropertyModel', propModel => propModel],
     ['public standard API', propModel => propModel.getStandardPublicApi()],
     ['private standard API', propModel => propModel.getStandardPrivateApi()]
-  ].forEach(([ source, provider ]) => {
+  ].forEach(([source, provider]) => {
     it(`should install appropriate accessors on target object when accessed via the ${source}`, () => {
       // given
       const emitter = new EventEmitter()

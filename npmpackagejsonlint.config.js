@@ -1,5 +1,5 @@
 module.exports = {
-  'rules': {
+  rules: {
     'require-author': 'error',
     'require-description': 'error',
     'require-engines': 'error',
@@ -28,18 +28,16 @@ module.exports = {
     'repository-type': 'error',
     'scripts-type': 'error',
     'version-type': 'error',
-    'valid-values-private': ['error', [
-      false
-    ]],
-    'no-restricted-dependencies': ['error', [
-      'gulping-npm-package-json-lint'
-    ]],
-    'no-restricted-pre-release-dependencies': ['error', [
-      'gulping-npm-package-json-lint'
-    ]],
-    'no-restricted-pre-release-devDependencies': ['error', [
-      'gulping-npm-package-json-lint'
-    ]],
+    'valid-values-private': ['error', [false]],
+    'no-restricted-dependencies': ['error', ['gulping-npm-package-json-lint']],
+    'no-restricted-pre-release-dependencies': [
+      'error',
+      ['gulping-npm-package-json-lint']
+    ],
+    'no-restricted-pre-release-devDependencies': [
+      'error',
+      ['gulping-npm-package-json-lint']
+    ],
     'name-format': 'error',
     'version-format': 'error'
   }

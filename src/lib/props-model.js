@@ -35,19 +35,25 @@ export class PropsModel {
    * @param {*} oldValue The previous value of the property.
    */
   _firePropChangeEvent (propName, newValue, oldValue) {
-    this._firePropChangeEvents([
-      [propName, [newValue, oldValue]]
-    ])
+    this._firePropChangeEvents([[propName, [newValue, oldValue]]])
   }
 
   _firePropChangeEvents (events) {
     const firstInChain = this._firedProps.size === 0
     events.forEach(([propName, [newValue, oldValue]]) => {
       this._firedProps.add(propName)
-      this._eventEmitter.emit(`${propName}-changed`, propName, newValue, oldValue)
+      this._eventEmitter.emit(
+        `${propName}-changed`,
+        propName,
+        newValue,
+        oldValue
+      )
     })
     if (firstInChain) {
-      this._eventEmitter.emit('prop-chain-completed', Array.from(this._firedProps))
+      this._eventEmitter.emit(
+        'prop-chain-completed',
+        Array.from(this._firedProps)
+      )
       this._firedProps.clear()
     }
   }
@@ -70,7 +76,12 @@ export class PropsModel {
    * if the function returns a truthy value. The default uses `newValue !== oldValue`. Note that the property value is changed
    * regardless of what this function returns, it is only used to determine if the event should be fired.
    */
-  defineProp (propName, initialValue, valueValidator = NOOP, didChange = defaultDidChange) {
+  defineProp (
+    propName,
+    initialValue,
+    valueValidator = NOOP,
+    didChange = defaultDidChange
+  ) {
     if (this._props[propName]) {
       throw new Error(`Property already defined: ${propName}`)
     }
@@ -102,19 +113,32 @@ export class PropsModel {
    * @param {didChange} [didChange] An optional function to determine if a new value for the property should be
    * considered a change from its previous value. See the same parameter on [`defineProp`]{@link PropsModel#defineProp}.
    */
-  defineDerivedProp (propName, dependsOn = [], _calculateValue, initialValue, didChange = defaultDidChange) {
+  defineDerivedProp (
+    propName,
+    dependsOn = [],
+    _calculateValue,
+    initialValue,
+    didChange = defaultDidChange
+  ) {
     if (this._props[propName]) {
       throw new Error(`Property already defined: ${propName}`)
     }
     const calculateValue = this.createUtilizer(dependsOn, _calculateValue)
-    const value = typeof initialValue === 'undefined' ? calculateValue() : initialValue
+    const value =
+      typeof initialValue === 'undefined' ? calculateValue() : initialValue
     this._props[propName] = {
       value,
       derived: true,
       valueValidator: () => {},
       didChange
     }
-    this._onAny(() => {}, dependsOn, () => { this.set(propName, calculateValue()) })
+    this._onAny(
+      () => {},
+      dependsOn,
+      () => {
+        this.set(propName, calculateValue())
+      }
+    )
     if (didChange(value, undefined)) {
       this._firePropChangeEvent(propName, value, undefined)
     }
@@ -154,7 +178,13 @@ export class PropsModel {
    * @param {function(V, V):boolean} didChange An optional function used to determine if the view prop should be considered
    *   to be changed.
    */
-  definePropView (viewName, viewOf, calculateViewValue, reduceBaseValue, didChange = defaultDidChange) {
+  definePropView (
+    viewName,
+    viewOf,
+    calculateViewValue,
+    reduceBaseValue,
+    didChange = defaultDidChange
+  ) {
     if (this._props[viewName]) {
       throw new Error(`Property already defined: ${viewName}`)
     }
@@ -170,17 +200,25 @@ export class PropsModel {
       didChange
     }
     let triggered = false
-    this._onAny(() => {}, [viewOf], () => {
-      if (!triggered) {
-        this.set(viewName, calculateValue())
+    this._onAny(
+      () => {},
+      [viewOf],
+      () => {
+        if (!triggered) {
+          this.set(viewName, calculateValue())
+        }
       }
-    })
-    this._onAny(() => {}, [viewName], (ignore, newViewValue, oldViewValue) => {
-      const newViewOfValue = reduceBaseValue(newViewValue, this.get(viewOf))
-      triggered = true
-      this.set(viewOf, newViewOfValue)
-      triggered = false
-    })
+    )
+    this._onAny(
+      () => {},
+      [viewName],
+      (ignore, newViewValue, oldViewValue) => {
+        const newViewOfValue = reduceBaseValue(newViewValue, this.get(viewOf))
+        triggered = true
+        this.set(viewOf, newViewOfValue)
+        triggered = false
+      }
+    )
     if (didChange(value, undefined)) {
       this._firePropChangeEvent(viewName, value, undefined)
     }
@@ -188,12 +226,26 @@ export class PropsModel {
   }
 
   defineViewOfArrayProp (viewName, viewOf, arrayIndex, didChange) {
-    return this.definePropView(viewName, viewOf, base => base[arrayIndex], (viewValue, baseValue) => [...baseValue.slice(0, arrayIndex), viewValue, ...baseValue.slice(arrayIndex + 1)], didChange)
+    return this.definePropView(
+      viewName,
+      viewOf,
+      (base) => base[arrayIndex],
+      (viewValue, baseValue) => [
+        ...baseValue.slice(0, arrayIndex),
+        viewValue,
+        ...baseValue.slice(arrayIndex + 1)
+      ],
+      didChange
+    )
   }
 
   defineViewOfObjectProp (viewName, viewOf, propertyName, didChange) {
-    return this.definePropView(viewName, viewOf, baseValue => baseValue[propertyName],
-      (viewValue, baseValue) => ({ ...baseValue, [propertyName]: viewValue }))
+    return this.definePropView(
+      viewName,
+      viewOf,
+      (baseValue) => baseValue[propertyName],
+      (viewValue, baseValue) => ({ ...baseValue, [propertyName]: viewValue })
+    )
   }
 
   /**
@@ -210,23 +262,25 @@ export class PropsModel {
    */
   _set (propValidator, ...args) {
     if (args.length === 1) {
-      Object.keys(args[0]).forEach(propName => {
+      Object.keys(args[0]).forEach((propName) => {
         if (!this._props[propName]) {
           throw new Error(`No such property '${propName}'`)
         }
       })
       Object.keys(args[0]).forEach(propValidator)
-      Object.entries(args[0]).forEach(([ propName, value ]) => {
+      Object.entries(args[0]).forEach(([propName, value]) => {
         this._props[propName].valueValidator(value)
       })
       const oldValues = []
-      Object.entries(args[0]).forEach(([ propName, value ]) => {
+      Object.entries(args[0]).forEach(([propName, value]) => {
         oldValues.push(this._props[propName].value)
         this._props[propName].value = value
       })
       const changeEvents = Object.entries(args[0])
-        .map(([ propName, value ], idx) => [propName, [value, oldValues[idx]]])
-        .filter(([propName, [newValue, oldValue]]) => this._props[propName].didChange(newValue, oldValue))
+        .map(([propName, value], idx) => [propName, [value, oldValues[idx]]])
+        .filter(([propName, [newValue, oldValue]]) =>
+          this._props[propName].didChange(newValue, oldValue)
+        )
       this._firePropChangeEvents(changeEvents)
     } else {
       const [propName, value] = args
@@ -285,7 +339,7 @@ export class PropsModel {
    */
   _toJSON (propChecker) {
     return Object.entries(this._props)
-      .filter(([ propName ]) => propChecker(propName))
+      .filter(([propName]) => propChecker(propName))
       .reduce((o, [propName, { value }]) => {
         o[propName] = JSON.parse(JSON.stringify(value))
         return o
@@ -293,16 +347,14 @@ export class PropsModel {
   }
 
   _getAll (propChecker, propNames = Object.keys(this._props)) {
-    return propNames
-      .filter(propChecker)
-      .reduce((o, propName) => {
-        const prop = this._props[propName]
-        if (!prop) {
-          throw new Error(`No such property '${propName}'`)
-        }
-        o[propName] = this._props[propName].value
-        return o
-      }, {})
+    return propNames.filter(propChecker).reduce((o, propName) => {
+      const prop = this._props[propName]
+      if (!prop) {
+        throw new Error(`No such property '${propName}'`)
+      }
+      o[propName] = this._props[propName].value
+      return o
+    }, {})
   }
 
   _getPropNames (propChecker) {
@@ -314,10 +366,12 @@ export class PropsModel {
    * Adds accessor methods (getters and setters) fo the specified properties as methods on the given target object.
    */
   _installAccessors (readValidator, writeValidator, target, propertyAccess) {
-    for (let propName of Object.keys(propertyAccess)) {
+    for (const propName of Object.keys(propertyAccess)) {
       const access = propertyAccess[propName]
       if (!this._props[propName]) {
-        throw new Error(`Cannot create accessors for non-existant property '${propName}'`)
+        throw new Error(
+          `Cannot create accessors for non-existant property '${propName}'`
+        )
       }
       switch (access.toLowerCase()) {
         case 'readonly':
@@ -333,34 +387,44 @@ export class PropsModel {
           break
 
         default:
-          throw new Error(`Unknown access type '${access}' specified for property '${propName}'`)
+          throw new Error(
+            `Unknown access type '${access}' specified for property '${propName}'`
+          )
       }
     }
-    for (let propName of Object.keys(propertyAccess)) {
+    for (const propName of Object.keys(propertyAccess)) {
       const access = propertyAccess[propName]
       switch (access.toLowerCase()) {
         case 'readonly':
-          const [funcName] = createAccessorNames(propName, 'get')
-          const getter = {
-            [funcName]: () => {
-              return this._props[propName].value
-            }
-          }[funcName]
-          target[funcName] = getter
+          {
+            const [funcName] = createAccessorNames(propName, 'get')
+            const getter = {
+              [funcName]: () => {
+                return this._props[propName].value
+              }
+            }[funcName]
+            target[funcName] = getter
+          }
           break
 
         case 'readwrite':
-          const [getterName, setterName] = createAccessorNames(propName, 'get', 'set')
-          const funcs = {
-            [getterName]: () => {
-              return this._props[propName].value
-            },
-            [setterName]: (value) => {
-              this._set(() => {}, propName, value)
+          {
+            const [getterName, setterName] = createAccessorNames(
+              propName,
+              'get',
+              'set'
+            )
+            const funcs = {
+              [getterName]: () => {
+                return this._props[propName].value
+              },
+              [setterName]: (value) => {
+                this._set(() => {}, propName, value)
+              }
             }
+            target[getterName] = funcs[getterName]
+            target[setterName] = funcs[setterName]
           }
-          target[getterName] = funcs[getterName]
-          target[setterName] = funcs[setterName]
           break
 
         default:
@@ -381,14 +445,16 @@ export class PropsModel {
    */
   _createUtilizer (propValidator, [...propNames], handler) {
     propNames.forEach(propValidator)
-    propNames.forEach(propName => {
+    propNames.forEach((propName) => {
       if (!this._props[propName]) {
-        throw new Error(`Cannot create utilizer of unknown property '${propName}'`)
+        throw new Error(
+          `Cannot create utilizer of unknown property '${propName}'`
+        )
       }
     })
     return (...args) => {
       return handler(
-        ...propNames.map(propName => this._props[propName].value),
+        ...propNames.map((propName) => this._props[propName].value),
         ...args
       )
     }
@@ -407,7 +473,9 @@ export class PropsModel {
   }
 
   _onPropChainComplete (propFilter, handler) {
-    this._eventEmitter.on('prop-chain-completed', (firedProps) => handler(firedProps.filter(propFilter)))
+    this._eventEmitter.on('prop-chain-completed', (firedProps) =>
+      handler(firedProps.filter(propFilter))
+    )
   }
 
   /**
@@ -468,7 +536,11 @@ export class PropsModel {
   }
 
   installAccessors (...args) {
-    return this._installAccessors(() => {}, () => {}, ...args)
+    return this._installAccessors(
+      () => {},
+      () => {},
+      ...args
+    )
   }
 
   /**
@@ -485,17 +557,24 @@ export class PropsModel {
    *
    * @returns {{get, set, createUtilizer, createChangeHandler, toJSON, getAll, getPropNames, }}
    */
-  createApi (readChecker, readValidator = propertyCheckerToValidator(readChecker), writeValidator = readValidator) {
+  createApi (
+    readChecker,
+    readValidator = propertyCheckerToValidator(readChecker),
+    writeValidator = readValidator
+  ) {
     return {
       get: (...args) => this._get(readValidator, ...args),
       set: (...args) => this._set(writeValidator, ...args),
       createUtilizer: (...args) => this._createUtilizer(readValidator, ...args),
-      createChangeHandler: (...args) => this._createChangeHandler(readValidator, ...args),
-      installAccessors: (...args) => this._installAccessors(readValidator, writeValidator, ...args),
+      createChangeHandler: (...args) =>
+        this._createChangeHandler(readValidator, ...args),
+      installAccessors: (...args) =>
+        this._installAccessors(readValidator, writeValidator, ...args),
       toJSON: () => this._toJSON(readChecker),
       getAll: () => this._getAll(readChecker),
       getPropNames: () => this._getPropNames(readChecker),
-      onPropChainComplete: (...args) => this._onPropChainComplete(readChecker, ...args)
+      onPropChainComplete: (...args) =>
+        this._onPropChainComplete(readChecker, ...args)
     }
   }
 
@@ -509,10 +588,14 @@ export class PropsModel {
    */
   getStandardPublicApi () {
     const standardWriteValidator = createStandardWriteValidator(this)
-    return this.createApi(propNameIsPublic, assertPropNameIsPublic, propName => {
-      assertPropNameIsPublic(propName)
-      standardWriteValidator(propName)
-    })
+    return this.createApi(
+      propNameIsPublic,
+      assertPropNameIsPublic,
+      (propName) => {
+        assertPropNameIsPublic(propName)
+        standardWriteValidator(propName)
+      }
+    )
   }
 
   /**
@@ -523,27 +606,35 @@ export class PropsModel {
    * trying to write to derived properties, which is usually not recommended.
    */
   getStandardPrivateApi () {
-    return this.createApi(() => true, () => {}, createStandardWriteValidator(this))
+    return this.createApi(
+      () => true,
+      () => {},
+      createStandardWriteValidator(this)
+    )
   }
 }
 
-function NOOP () { }
+function NOOP () {}
 
 function defaultDidChange (newValue, oldVaue) {
   return newValue !== oldVaue
 }
 
 function createAccessorNames (propName, ...prefixes) {
-  return prefixes.map(prefix => `${prefix}${propName.replace(/^./, c => c.toUpperCase())}`)
+  return prefixes.map(
+    (prefix) => `${prefix}${propName.replace(/^./, (c) => c.toUpperCase())}`
+  )
 }
 
 function propertyCheckerToValidator (checker) {
-  return propName => {
+  return (propName) => {
     const checkResult = checker(propName)
     if (checkResult instanceof Error) {
       throw checkResult
     } else if (!checkResult) {
-      throw new Error(`Requested access to property '${propName}' is not allowed`)
+      throw new Error(
+        `Requested access to property '${propName}' is not allowed`
+      )
     }
   }
 }
@@ -559,9 +650,11 @@ function assertPropNameIsPublic (propName) {
 }
 
 function createStandardWriteValidator (propModel) {
-  return propName => {
+  return (propName) => {
     if (propModel._props[propName].derived) {
-      throw new Error(`Write access to ${propName} is not allowed because the property is a derived property.`)
+      throw new Error(
+        `Write access to ${propName} is not allowed because the property is a derived property.`
+      )
     }
   }
 }
